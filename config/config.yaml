@@ -2,22 +2,20 @@ timed_task:
   second: 30
 
 influx:
-  url: http://39.107.67.211:8086
-  user: admin
-  password: wLgObxj79fqFGO0G
-  db: limeng
+  url: 
+  user: 
+  password: 
+  db: 
+  precision: ms
 
 modules:
   baidu_get:
     mothod: GET
     url:
-      - http://test.confluxrpc.com
-      - http://portal-main.confluxrpc.com
       - http://www.baidu.com
 
   baidu_post_epochnumber:
     mothod: POST
-    body: '{"jsonrpc": "2.0", "method": "cfx_epochNumber", "params": [], "id": 1}'
+    body: '{"jsonrpc": "2.0", "method": "", "params": [], "id": 1}'
     url:
-      - http://test.confluxrpc.com
-      - http://main.confluxrpc.com
+      - http://www.baidu.com

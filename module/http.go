@@ -90,8 +90,8 @@ func Conninflux() client.Client {
 
 func Writeinflux(cli client.Client, module string, mothod string, trace Request) {
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
-		Database:  config.ReadConfig("influx.db").(string), //数据库名称
-		Precision: "ms",                                    //时间精度到毫秒（很重要，不然循环写入会覆盖之前的数据，influxdb是以时间戳为单位）
+		Database:  config.ReadConfig("influx.db").(string),        //数据库名称
+		Precision: config.ReadConfig("influx.precision").(string), //时间精度到毫秒（很重要，不然循环写入会覆盖之前的数据，influxdb是以时间戳为单位）
 	})
 
 	if err != nil {
