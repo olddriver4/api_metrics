@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"time"
 
 	"api_metrics/config"
 	"api_metrics/module"
@@ -38,31 +39,33 @@ func main() {
 		log.Fatal("Please enter the parameters [module] !")
 	}
 
+	ticker := time.NewTicker(time.Millisecond * 10)
 	for _, m := range modules {
-		urls := config.ReadConfig("modules." + m + ".url").([]interface{})
 		mothod := config.ReadConfig("modules." + m + ".mothod").(string)
+		for range ticker.C { //定时器运行
+			// 连接influxdb
+			//conn := module.Conninflux()
+			//defer conn.Close()
 
-		// 连接influxdb
-		conn := module.Conninflux()
-		defer conn.Close()
+			//判断mothod方法
+			urls := config.ReadConfig("modules." + m + ".url").([]interface{})
+			for _, url := range urls {
+				if mothod == "GET" {
+					conn := module.Conninflux()
+					trace := module.Get_Trace(url.(string))
+					module.Writeinflux(conn, m, mothod, trace)
+					conn.Close()
 
-		//判断mothod方法
-		for _, url := range urls {
-			if mothod == "GET" {
-				conn := module.Conninflux()
-				trace := module.Get_Trace(url.(string))
-				module.Writeinflux(conn, m, mothod, trace)
-				conn.Close()
+				} else if mothod == "POST" {
+					conn := module.Conninflux()
+					body := config.ReadConfig("modules." + m + ".body").(string)
+					trace := module.Post_Trace(url.(string), body)
+					module.Writeinflux(conn, m, mothod, trace)
+					conn.Close()
 
-			} else if mothod == "POST" {
-				conn := module.Conninflux()
-				body := config.ReadConfig("modules." + m + ".body").(string)
-				trace := module.Post_Trace(url.(string), body)
-				module.Writeinflux(conn, m, mothod, trace)
-				conn.Close()
-
-			} else {
-				log.Error("Mothod: ", mothod, " is error, Please check yaml config !")
+				} else {
+					log.Error("Mothod: ", mothod, " is error, Please check yaml config !")
+				}
 			}
 		}
 	}

@@ -1,8 +1,8 @@
 influx:
-  url:
+  url: 
   user: admin
   password: 
-  db: limeng
+  db: apimetrics
   precision: ms
 
 modules:
@@ -12,7 +12,7 @@ modules:
       - http://www.baidu.com
       - https://juejin.cn
 
-  baidu_post_epochnumber:
+  baidu_post:
     mothod: POST
     body: '{"jsonrpc": "2.0", "method": "cfx_epochNumber", "params": [], "id": 1}'
     url:

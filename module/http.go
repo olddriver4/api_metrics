@@ -26,10 +26,14 @@ type Request struct {
 }
 
 func Post_Trace(url string, body string) Request {
-	client := resty.New()               // 创建一个restry客户端
-	client.SetTimeout(10 * time.Second) // 配置超时秒数
+	client := resty.New() // 创建一个restry客户端
+	client.SetRetryWaitTime(10 * time.Second).SetRetryCount(1).SetCloseConnection(true).SetTimeout(time.Second * 10)
 
-	resp, err := client.R().EnableTrace().SetHeader("Content-Type", "application/json").SetBody(body).Post(url) // 匹配访问Mothod方法
+	resp, err := client.R().
+		EnableTrace().                                 //开启trace
+		SetHeader("Content-Type", "application/json"). //默认请求头
+		SetBody(body).                                 //匹配body
+		Post(url)
 	if err != nil {
 		log.Error("Client mothod error: ", err)
 	}
@@ -50,10 +54,9 @@ func Post_Trace(url string, body string) Request {
 }
 
 func Get_Trace(url string) Request {
-	client := resty.New()               // 创建一个restry客户端
-	client.SetTimeout(10 * time.Second) // 配置超时秒数
-
-	resp, err := client.R().EnableTrace().Get(url) // 匹配访问Mothod方法
+	client := resty.New() // 创建一个restry客户端
+	client.SetRetryWaitTime(10 * time.Second).SetRetryCount(1).SetCloseConnection(true).SetTimeout(time.Second * 10)
+	resp, err := client.R().EnableTrace().Get(url)
 	if err != nil {
 		log.Error("Client mothod error: ", err)
 	}
