@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 
+	"github.com/fsnotify/fsnotify"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -13,15 +14,25 @@ func ReadConfig(parameter string) interface{} {
 		log.Error(err)
 	}
 
-	viper.AddConfigPath(path + "/config")
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
+	v := viper.New()
+	v.AddConfigPath(path + "/config")
+	v.SetConfigName("config")
+	v.SetConfigType("yaml")
 
-	if err := viper.ReadInConfig(); err != nil {
+	v.WatchConfig()
+	v.OnConfigChange(func(e fsnotify.Event) {
+		requestLogger := log.WithFields(log.Fields{
+			"file": e.Name,
+			"type": e.Op,
+		})
+		requestLogger.Info("Config file updated.")
+	})
+
+	if err := v.ReadInConfig(); err != nil {
 		log.Fatal("Reading config yaml is fail: ", err)
 	}
-	if viper.IsSet(parameter) {
-		return viper.Get(parameter)
+	if v.IsSet(parameter) {
+		return v.Get(parameter)
 	} else {
 		log.Fatal("Not is config: ", parameter)
 	}

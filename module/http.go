@@ -126,6 +126,11 @@ func Writeinflux(cli client.Client, module string, mothod string, trace Request)
 	if err != nil {
 		log.Error("Inster fields fail: ", err)
 	} else {
-		log.Info("[module] ", module, " [url] ", trace.URL, " [mothod] ", m, " insert sucess !")
+		requestLogger := log.WithFields(log.Fields{
+			"module": module,
+			"url":    trace.URL,
+			"mothod": m,
+		})
+		requestLogger.Info("insert sucess.")
 	}
 }

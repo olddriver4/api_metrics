@@ -3,9 +3,9 @@ timed_task:
 
 influx:
   url: 
-  user: 
+  user: admin
   password: 
-  db: 
+  db: limeng
   precision: ms
 
 modules:
@@ -13,9 +13,11 @@ modules:
     mothod: GET
     url:
       - http://www.baidu.com
+      - https://juejin.cn
 
   baidu_post_epochnumber:
     mothod: POST
     body: '{"jsonrpc": "2.0", "method": "", "params": [], "id": 1}'
     url:
       - http://www.baidu.com
+      - https://juejin.cn
