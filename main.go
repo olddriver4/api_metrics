@@ -39,7 +39,7 @@ func main() {
 		log.Fatal("Please enter the parameters [module] !")
 	}
 
-	ticker := time.NewTicker(time.Millisecond * 10)
+	ticker := time.NewTicker(time.Duration(config.ReadConfig("timer.second").(int)) * time.Second)
 	for _, m := range modules {
 		mothod := config.ReadConfig("modules." + m + ".mothod").(string)
 		for range ticker.C { //定时器运行

@@ -1,3 +1,6 @@
+timer:
+  second: 30
+
 influx:
   url: 
   user: admin
