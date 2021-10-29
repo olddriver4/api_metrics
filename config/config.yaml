@@ -1,5 +1,5 @@
 influx:
-  url: 
+  url:
   user: admin
   password: 
   db: limeng
@@ -14,7 +14,7 @@ modules:
 
   baidu_post_epochnumber:
     mothod: POST
-    body: '{"jsonrpc": "2.0", "method": "", "params": [], "id": 1}'
+    body: '{"jsonrpc": "2.0", "method": "cfx_epochNumber", "params": [], "id": 1}'
     url:
       - http://www.baidu.com
       - https://juejin.cn

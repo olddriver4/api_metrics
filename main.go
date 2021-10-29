@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"time"
 
 	"api_metrics/config"
 	"api_metrics/module"
@@ -43,6 +42,10 @@ func main() {
 		urls := config.ReadConfig("modules." + m + ".url").([]interface{})
 		mothod := config.ReadConfig("modules." + m + ".mothod").(string)
 
+		// 连接influxdb
+		conn := module.Conninflux()
+		defer conn.Close()
+
 		//判断mothod方法
 		for _, url := range urls {
 			if mothod == "GET" {
@@ -62,6 +65,5 @@ func main() {
 				log.Error("Mothod: ", mothod, " is error, Please check yaml config !")
 			}
 		}
-		time.Sleep(time.Duration(5) * time.Second)
 	}
 }
