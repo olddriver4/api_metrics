@@ -6,7 +6,6 @@
 --module baidu_get --module baidu_post  
  
 #### Yaml Config explain:  
-timed_task.second 超时秒数，默认30秒  
 influx            influx连接信息  
   -precision      时间精度到毫秒（很重要，不然循环写入会覆盖之前的数据，influxdb是以时间戳为单位）默认ms  
   -table          默认以mothod定义表明，比如mothod是get，表名就等于get  

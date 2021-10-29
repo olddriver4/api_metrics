@@ -27,7 +27,7 @@ type Request struct {
 
 func Post_Trace(url string, body string) Request {
 	client := resty.New()               // 创建一个restry客户端
-	client.SetTimeout(30 * time.Second) // 配置超时秒数
+	client.SetTimeout(10 * time.Second) // 配置超时秒数
 
 	resp, err := client.R().EnableTrace().SetHeader("Content-Type", "application/json").SetBody(body).Post(url) // 匹配访问Mothod方法
 	if err != nil {
@@ -50,9 +50,8 @@ func Post_Trace(url string, body string) Request {
 }
 
 func Get_Trace(url string) Request {
-
 	client := resty.New()               // 创建一个restry客户端
-	client.SetTimeout(30 * time.Second) // 配置超时秒数
+	client.SetTimeout(10 * time.Second) // 配置超时秒数
 
 	resp, err := client.R().EnableTrace().Get(url) // 匹配访问Mothod方法
 	if err != nil {

@@ -1,6 +1,3 @@
-timed_task:
-  second: 30
-
 influx:
   url: 
   user: admin
