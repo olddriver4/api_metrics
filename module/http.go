@@ -90,7 +90,7 @@ func Conninflux() client.Client {
 	return cli
 }
 
-func Writeinflux(cli client.Client, module string, mothod string, trace Request) {
+func Writeinflux(cli client.Client, name string, public string, module string, mothod string, trace Request) {
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  config.ReadConfig("influx.db").(string),        //数据库名称
 		Precision: config.ReadConfig("influx.precision").(string), //时间精度到毫秒（很重要，不然循环写入会覆盖之前的数据，influxdb是以时间戳为单位）
@@ -100,26 +100,28 @@ func Writeinflux(cli client.Client, module string, mothod string, trace Request)
 		log.Error("Connection influxdb fail :", err)
 	}
 
-	m := strings.ToLower(mothod)
+	md := strings.ToLower(mothod)
+	t := strings.ToLower(module)
 
 	tags := map[string]string{
-		"api": m,
+		"api": t,
 	}
 	fields := map[string]interface{}{
-		"Name":         module,
-		"URL":          trace.URL,
-		"Mothod":       m,
-		"Proto":        trace.Proto,
-		"Status":       trace.Status,
-		"DNSLookup":    trace.DNSLookup,
-		"ConnTime":     trace.ConnTime,
-		"TCPConnTime":  trace.TCPConnTime,
-		"TLSHandshake": trace.TLSHandshake,
-		"ServerTime":   trace.ServerTime,
-		"ResponseTime": trace.ResponseTime,
-		"TotalTime":    trace.TotalTime,
+		"nodeid":       name,
+		"url":          trace.URL,
+		"public":       public,
+		"mothod":       md,
+		"proto":        trace.Proto,
+		"status":       trace.Status,
+		"dnslookup":    trace.DNSLookup,
+		"conntime":     trace.ConnTime,
+		"tcpconntime":  trace.TCPConnTime,
+		"tlsHandshake": trace.TLSHandshake,
+		"servertime":   trace.ServerTime,
+		"responsetime": trace.ResponseTime,
+		"totaltime":    trace.TotalTime,
 	}
-	pt, err := client.NewPoint(m, tags, fields, time.Now()) //并插入对应字段和tag，如果表不存在自动创建
+	pt, err := client.NewPoint(t, tags, fields, time.Now()) //并插入对应字段和tag，如果表不存在自动创建
 	if err != nil {
 		log.Error("Create table fail: ", err)
 	}
@@ -131,7 +133,7 @@ func Writeinflux(cli client.Client, module string, mothod string, trace Request)
 		requestLogger := log.WithFields(log.Fields{
 			"module": module,
 			"url":    trace.URL,
-			"mothod": m,
+			"mothod": md,
 		})
 		requestLogger.Info("insert sucess.")
 	}

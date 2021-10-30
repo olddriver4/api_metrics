@@ -40,27 +40,31 @@ func main() {
 	}
 
 	ticker := time.NewTicker(time.Duration(config.ReadConfig("timer.second").(int)) * time.Second)
-	for _, m := range modules {
-		mothod := config.ReadConfig("modules." + m + ".mothod").(string)
-		for range ticker.C { //定时器运行
+	for range ticker.C { //定时器运行
+		for _, m := range modules {
+			mothod := config.ReadConfig("modules." + m + ".mothod").(string)
+			urls := config.ReadConfig("modules." + m + ".url").(map[string]interface{})
 			// 连接influxdb
 			//conn := module.Conninflux()
 			//defer conn.Close()
 
 			//判断mothod方法
-			urls := config.ReadConfig("modules." + m + ".url").([]interface{})
-			for _, url := range urls {
+			for name, values := range urls {
+				v := values.([]interface{})
+				url := v[0].(string)
+				public := v[1].(string)
+
 				if mothod == "GET" {
 					conn := module.Conninflux()
-					trace := module.Get_Trace(url.(string))
-					module.Writeinflux(conn, m, mothod, trace)
+					trace := module.Get_Trace(url)
+					module.Writeinflux(conn, name, public, m, mothod, trace)
 					conn.Close()
 
 				} else if mothod == "POST" {
 					conn := module.Conninflux()
 					body := config.ReadConfig("modules." + m + ".body").(string)
-					trace := module.Post_Trace(url.(string), body)
-					module.Writeinflux(conn, m, mothod, trace)
+					trace := module.Post_Trace(url, body)
+					module.Writeinflux(conn, name, public, m, mothod, trace)
 					conn.Close()
 
 				} else {
