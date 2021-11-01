@@ -109,7 +109,7 @@ func Writeinflux(cli client.Client, name string, public string, module string, m
 	fields := map[string]interface{}{
 		"nodeid":       name,
 		"url":          trace.URL,
-		"public":       public,
+		"publicip":     public,
 		"mothod":       md,
 		"proto":        trace.Proto,
 		"status":       trace.Status,

@@ -1,10 +1,10 @@
 timer:
-  second: 5  #配置最好不要大于linux time_wait 回收时间
+  second: 30  #配置最好不要大于linux time_wait 回收时间
 
 influx:
   url: 
   user: admin
-  password: 
+  password:
   db: apimetrics
   precision: ms
 
