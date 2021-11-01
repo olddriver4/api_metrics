@@ -1,5 +1,5 @@
 timer:
-  second: 30  #配置最好不要大于linux time_wait 回收时间
+  second: 5  #配置最好不要大于linux time_wait 回收时间
 
 influx:
   url: 
@@ -24,10 +24,10 @@ modules:
     mothod: POST
     body: '{"jsonrpc": "2.0", "method": "cfx_epochNumber", "params": [], "id": 1}'
     url:
-      baidu: 
-        - http://www.baidu.com
-        - 2.2.2.2
-
-      juejin:
-        - http://www.juejin.cn
-        - 1.1.1.1
+      infura_testnet-bj-test: 
+        - http://test.confluxrpc.com
+        - 123.57.249.249
+ 
+      infura_mainnet-bj-main:
+        - http://main.confluxrpc.com
+        - 8.140.19.93
