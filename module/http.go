@@ -14,21 +14,21 @@ type Request struct {
 	URL            string
 	Mothod         string
 	Status         int
-	Proto          string
-	DNSLookup      string
-	ConnTime       string
-	TCPConnTime    string
-	TLSHandshake   string
-	ServerTime     string
-	ResponseTime   string
-	TotalTime      string
-	RequestAttempt string
-	RemoteAddr     string
+	Proto          string //协议
+	DNSLookup      int64  //DNS 查询时间
+	ConnTime       int64  //获取一个连接的耗时
+	TCPConnTime    int64  //TCP 连接耗时
+	TLSHandshake   int64  //TLS握手耗时
+	ServerTime     int64  //服务器处理耗时
+	ResponseTime   int64  //响应耗时
+	TotalTime      int64  //总耗时
+	RequestAttempt int    //请求执行次数
+	RemoteAddr     string //远程服务器地址，IP:PORT格式
 }
 
 func Post_Trace(url string, body string) Request {
 	client := resty.New() // 创建一个restry客户端
-	client.SetRetryWaitTime(10 * time.Second).SetRetryCount(1).SetCloseConnection(true).SetTimeout(time.Second * 5)
+	client.SetCloseConnection(true).SetTimeout(time.Second * 5)
 
 	resp, err := client.R().
 		EnableTrace().                                 //开启trace
@@ -41,37 +41,43 @@ func Post_Trace(url string, body string) Request {
 			URL:          url,
 			Status:       500,
 			Proto:        "",
-			DNSLookup:    "",
-			ConnTime:     "",
-			TCPConnTime:  "",
-			TLSHandshake: "",
-			ServerTime:   "",
-			ResponseTime: "",
-			TotalTime:    "",
+			DNSLookup:    0,
+			ConnTime:     0,
+			TCPConnTime:  0,
+			TLSHandshake: 0,
+			ServerTime:   0,
+			ResponseTime: 0,
+			TotalTime:    0,
 			RemoteAddr:   "",
 		}
 		return *req
 	}
+	//value := 100 // value is of type int
+	//d2 := time.Duration(value) * time.Millisecond //100ms
+
+	//ms := int64(d2 / time.Millisecond) // 100
+
 	ti := resp.Request.TraceInfo()
 	req := &Request{
-		URL:          url,
-		Status:       resp.StatusCode(),
-		Proto:        resp.Proto(),
-		DNSLookup:    ti.DNSLookup.String(),
-		ConnTime:     ti.ConnTime.String(),
-		TCPConnTime:  ti.TCPConnTime.String(),
-		TLSHandshake: ti.TLSHandshake.String(),
-		ServerTime:   ti.ServerTime.String(),
-		ResponseTime: ti.ResponseTime.String(),
-		TotalTime:    ti.TotalTime.String(),
-		RemoteAddr:   ti.RemoteAddr.String(),
+		URL:            url,
+		Status:         resp.StatusCode(),
+		Proto:          resp.Proto(),
+		DNSLookup:      ti.DNSLookup.Nanoseconds(),
+		ConnTime:       ti.ConnTime.Nanoseconds(),
+		TCPConnTime:    ti.TCPConnTime.Nanoseconds(),
+		TLSHandshake:   ti.TLSHandshake.Nanoseconds(),
+		ServerTime:     ti.ServerTime.Nanoseconds(),
+		ResponseTime:   ti.ResponseTime.Nanoseconds(),
+		TotalTime:      ti.TotalTime.Nanoseconds(),
+		RequestAttempt: ti.RequestAttempt,
+		RemoteAddr:     ti.RemoteAddr.String(),
 	}
 	return *req
 }
 
 func Get_Trace(url string) Request {
 	client := resty.New() // 创建一个restry客户端
-	client.SetRetryWaitTime(10 * time.Second).SetRetryCount(1).SetCloseConnection(true).SetTimeout(time.Second * 5)
+	client.SetCloseConnection(true).SetTimeout(time.Second * 5)
 	resp, err := client.R().EnableTrace().Get(url)
 	if err != nil {
 		log.Error("Client mothod error: ", err)
@@ -79,30 +85,31 @@ func Get_Trace(url string) Request {
 			URL:          url,
 			Status:       500,
 			Proto:        "",
-			DNSLookup:    "",
-			ConnTime:     "",
-			TCPConnTime:  "",
-			TLSHandshake: "",
-			ServerTime:   "",
-			ResponseTime: "",
-			TotalTime:    "",
+			DNSLookup:    0,
+			ConnTime:     0,
+			TCPConnTime:  0,
+			TLSHandshake: 0,
+			ServerTime:   0,
+			ResponseTime: 0,
+			TotalTime:    0,
 			RemoteAddr:   "",
 		}
 		return *req
 	}
 	ti := resp.Request.TraceInfo()
 	req := &Request{
-		URL:          url,
-		Status:       resp.StatusCode(),
-		Proto:        resp.Proto(),
-		DNSLookup:    ti.DNSLookup.String(),
-		ConnTime:     ti.ConnTime.String(),
-		TCPConnTime:  ti.TCPConnTime.String(),
-		TLSHandshake: ti.TLSHandshake.String(),
-		ServerTime:   ti.ServerTime.String(),
-		ResponseTime: ti.ResponseTime.String(),
-		TotalTime:    ti.TotalTime.String(),
-		RemoteAddr:   ti.RemoteAddr.String(),
+		URL:            url,
+		Status:         resp.StatusCode(),
+		Proto:          resp.Proto(),
+		DNSLookup:      ti.DNSLookup.Nanoseconds(),
+		ConnTime:       ti.ConnTime.Nanoseconds(),
+		TCPConnTime:    ti.TCPConnTime.Nanoseconds(),
+		TLSHandshake:   ti.TLSHandshake.Nanoseconds(),
+		ServerTime:     ti.ServerTime.Nanoseconds(),
+		ResponseTime:   ti.ResponseTime.Nanoseconds(),
+		TotalTime:      ti.TotalTime.Nanoseconds(),
+		RequestAttempt: ti.RequestAttempt,
+		RemoteAddr:     ti.RemoteAddr.String(),
 	}
 
 	return *req
@@ -124,7 +131,7 @@ func Conninflux() client.Client {
 func Writeinflux(cli client.Client, name string, module string, mothod string, trace Request) {
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  config.ReadConfig("influx.db").(string),        //数据库名称
-		Precision: config.ReadConfig("influx.precision").(string), //时间精度到毫秒（很重要，不然循环写入会覆盖之前的数据，influxdb是以时间戳为单位）
+		Precision: config.ReadConfig("influx.precision").(string), //时间精度（很重要，不然循环写入会覆盖之前的数据，influxdb是以时间戳为单位）
 	})
 
 	if err != nil {

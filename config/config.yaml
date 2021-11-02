@@ -1,23 +1,24 @@
 timer:
-  second: 30  #配置最好不要大于linux time_wait 回收时间
+  second: 30  #配置最好不要小于linux time_wait 回收时间
 
 influx:
   url: 
   user: admin
   password: 
   db: apimetrics
-  precision: ms
+  precision: ns #(use n, u, ms, s, m or h)
 
 modules:
-  test_get:
+  get:
     mothod: GET
     url:
-      baidu: http://www.baidu.com
-      juejin: http://www.juejin.cn
+      nft_get: https://nfttest.confluxnetwork.org
+      scan_get: https://www.confluxscan.io
+      devops_test-get: https://10minutemail.net
 
-  test_post:
+  publicrpc_post:
     mothod: POST
     body: '{"jsonrpc": "2.0", "method": "cfx_epochNumber", "params": [], "id": 1}'
     url:
-      infura_testnet-bj-test: 
-      infura_mainnet-bj-main:
+      infura_testnet-bj-post-test: 
+      infura_mainnet-bj-post-main: 
