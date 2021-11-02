@@ -49,22 +49,19 @@ func main() {
 			//defer conn.Close()
 
 			//判断mothod方法
-			for name, values := range urls {
-				v := values.([]interface{})
-				url := v[0].(string)
-				public := v[1].(string)
-
+			for name, url := range urls {
+				url := url.(string)
 				if mothod == "GET" {
 					conn := module.Conninflux()
 					trace := module.Get_Trace(url)
-					module.Writeinflux(conn, name, public, m, mothod, trace)
+					module.Writeinflux(conn, name, m, mothod, trace)
 					conn.Close()
 
 				} else if mothod == "POST" {
 					conn := module.Conninflux()
 					body := config.ReadConfig("modules." + m + ".body").(string)
 					trace := module.Post_Trace(url, body)
-					module.Writeinflux(conn, name, public, m, mothod, trace)
+					module.Writeinflux(conn, name, m, mothod, trace)
 					conn.Close()
 
 				} else {

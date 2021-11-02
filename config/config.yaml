@@ -4,7 +4,7 @@ timer:
 influx:
   url: 
   user: admin
-  password:
+  password: 
   db: apimetrics
   precision: ms
 
@@ -12,22 +12,12 @@ modules:
   test_get:
     mothod: GET
     url:
-      baidu: 
-        - http://www.baidu.com
-        - 2.2.2.2
-
-      juejin:
-        - http://www.juejin.cn
-        - 1.1.1.1
+      baidu: http://www.baidu.com
+      juejin: http://www.juejin.cn
 
   test_post:
     mothod: POST
     body: '{"jsonrpc": "2.0", "method": "cfx_epochNumber", "params": [], "id": 1}'
     url:
       infura_testnet-bj-test: 
-        - http://test.confluxrpc.com
-        - 123.57.249.249
- 
       infura_mainnet-bj-main:
-        - http://main.confluxrpc.com
-        - 8.140.19.93
