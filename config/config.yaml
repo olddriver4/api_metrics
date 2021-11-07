@@ -1,24 +1,73 @@
 timer:
-  second: 30  #配置最好不要小于linux time_wait 回收时间
+  second: 180  #配置最好不要小于linux time_wait 回收时间
 
 influx:
   url: 
   user: admin
   password: 
-  db: apimetrics
+  db: 
   precision: ns #(use n, u, ms, s, m or h)
+
+depends:
+  cfx_getBlockByEpochNumber:
+    params: result.hash #过滤接口返回值
+    default_value: "0x53fe995edeec7d241791ff32635244e94ecfd722c9fe90f34ddf59082d814514" #依赖key请求不到，设置默认key
+    body: '{"jsonrpc":"2.0","method":"cfx_getBlockByEpochNumber","params":["latest_confirmed", false],"id":1}'
 
 modules:
   get:
     mothod: GET
     url:
-      nft_get: https://nfttest.confluxnetwork.org
-      scan_get: https://www.confluxscan.io
-      devops_test-get: https://10minutemail.net
 
-  publicrpc_post:
+
+  cfx_epochNumber:
     mothod: POST
-    body: '{"jsonrpc": "2.0", "method": "cfx_epochNumber", "params": [], "id": 1}'
+    body: '{"jsonrpc":"2.0","method":"cfx_epochNumber","params":["latest_mined"],"id":1}'
     url:
-      infura_testnet-bj-post-test: 
-      infura_mainnet-bj-post-main: 
+      infura_testnet-hk_getBlockByEpochNumber: http://test.confluxrpc.com
+      infura_mainnet-hk_getBlockByEpochNumber: http://main.confluxrpc.com
+
+  cfx_getBlockByEpochNumber:
+    mothod: POST 
+    body: '{"jsonrpc":"2.0","method":"cfx_getBlockByEpochNumber","params":["latest_confirmed", false],"id":1}'
+    url:
+      infura_testnet-hk_getBlockByEpochNumber: http://test.confluxrpc.com
+      infura_mainnet-hk_getBlockByEpochNumber: http://main.confluxrpc.com
+
+  cfx_getBlockByHash:
+    mothod: POST
+    body:  "{\"jsonrpc\":\"2.0\",\"method\":\"cfx_getBlockByHash\",\"params\":[\"${cfx_getBlockByEpochNumber}\"],\"id\":1}"
+    depend: cfx_getBlockByEpochNumber
+    url:
+      infura_testnet-hk_getBlockByHash: http://test.confluxrpc.com
+      infura_mainnet-hk_getBlockByHash: http://main.confluxrpc.com
+   
+  cfx_getLogs:
+    mothod: POST
+    body: '{"jsonrpc":"2.0","method":"cfx_getLogs","params":[{"fromEpoch":"latest_confirmed","toEpoch":"latest_state","limit":"0xe"}],"id":1}'
+    url:
+      infura_testnet-hk_getLogs: http://test.confluxrpc.com
+      infura_mainnet-hk_getLogs: http://main.confluxrpc.com
+
+  cfx_getTransactionByHash:
+    mothod: POST
+    body: "{\"jsonrpc\":\"2.0\",\"method\":\"cfx_getTransactionByHash\",\"params\":[\"${cfx_getBlockByEpochNumber}\"],\"id\":1}"
+    depend: cfx_getBlockByEpochNumber
+    url:
+      infura_testnet-hk_getTransactionByHash: http://test.confluxrpc.com
+      infura_mainnet-hk_getTransactionByHash: http://main.confluxrpc.com
+
+  cfx_getBlocksByEpoch:
+    mothod: POST
+    body: '{"jsonrpc":"2.0","method":"cfx_getBlocksByEpoch","params":["latest_confirmed"],"id":1}'
+    url:
+      infura_testnet-hk_getBlockByEpoch: http://test.confluxrpc.com
+      infura_mainnet-hk_getBlockByEpoch: http://main.confluxrpc.com
+
+  cfx_getTransactionReceipt:
+    mothod: POST
+    body: "{\"jsonrpc\":\"2.0\",\"method\":\"cfx_getTransactionReceipt\",\"params\":[\"${cfx_getBlockByEpochNumber}\"],\"id\":1}"
+    depend: cfx_getBlockByEpochNumber
+    url:
+      infura_testnet-hk_getTransactionReceipt: http://test.confluxrpc.com
+      infura_mainnet-hk_getTransactionReceipt: http://main.confluxrpc.com

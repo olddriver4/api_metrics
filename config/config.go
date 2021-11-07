@@ -23,9 +23,7 @@ func ReadConfig(parameter string) interface{} {
 	}
 	if v.IsSet(parameter) {
 		return v.Get(parameter)
-	} else {
-		log.Fatal("Not is config: ", parameter)
 	}
-
+	//log.Fatal("Not is config: ", parameter)
 	return nil
 }

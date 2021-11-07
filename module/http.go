@@ -52,10 +52,6 @@ func Post_Trace(url string, body string) Request {
 		}
 		return *req
 	}
-	//value := 100 // value is of type int
-	//d2 := time.Duration(value) * time.Millisecond //100ms
-
-	//ms := int64(d2 / time.Millisecond) // 100
 
 	ti := resp.Request.TraceInfo()
 	req := &Request{
@@ -72,6 +68,11 @@ func Post_Trace(url string, body string) Request {
 		RequestAttempt: ti.RequestAttempt,
 		RemoteAddr:     ti.RemoteAddr.String(),
 	}
+	requestLogger := log.WithFields(log.Fields{
+		"url":  url,
+		"body": body,
+	})
+	requestLogger.Info("request post sucess.")
 	return *req
 }
 
@@ -111,7 +112,10 @@ func Get_Trace(url string) Request {
 		RequestAttempt: ti.RequestAttempt,
 		RemoteAddr:     ti.RemoteAddr.String(),
 	}
-
+	requestLogger := log.WithFields(log.Fields{
+		"url": url,
+	})
+	requestLogger.Info("request post sucess.")
 	return *req
 }
 
@@ -146,18 +150,19 @@ func Writeinflux(cli client.Client, name string, module string, mothod string, t
 		"nodeid": name,
 	}
 	fields := map[string]interface{}{
-		"url":          trace.URL,
-		"publicip":     trace.RemoteAddr,
-		"mothod":       md,
-		"proto":        trace.Proto,
-		"status":       trace.Status,
-		"dnslookup":    trace.DNSLookup,
-		"conntime":     trace.ConnTime,
-		"tcpconntime":  trace.TCPConnTime,
-		"tlsHandshake": trace.TLSHandshake,
-		"servertime":   trace.ServerTime,
-		"responsetime": trace.ResponseTime,
-		"totaltime":    trace.TotalTime,
+		"url":            trace.URL,
+		"publicip":       trace.RemoteAddr,
+		"mothod":         md,
+		"proto":          trace.Proto,
+		"status":         trace.Status,
+		"dnslookup":      trace.DNSLookup,
+		"conntime":       trace.ConnTime,
+		"tcpconntime":    trace.TCPConnTime,
+		"tlsHandshake":   trace.TLSHandshake,
+		"servertime":     trace.ServerTime,
+		"responsetime":   trace.ResponseTime,
+		"requestAttempt": trace.RequestAttempt,
+		"totaltime":      trace.TotalTime,
 	}
 	pt, err := client.NewPoint(t, tags, fields, time.Now()) //并插入对应字段和tag，如果表不存在自动创建
 	if err != nil {
