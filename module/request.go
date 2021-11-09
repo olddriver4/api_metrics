@@ -18,7 +18,7 @@ func Request_post(url string, body string, params string) interface{} {
 		Post(url)
 
 	if err == nil {
-		filterkey := gojsonq.New().FromString(resp.String()).Find(params) //resulr.hash
+		filterkey := gojsonq.New().FromString(resp.String()).Find(params) //result.hash
 		return filterkey
 	}
 

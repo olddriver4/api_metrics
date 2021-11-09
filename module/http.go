@@ -8,6 +8,7 @@ import (
 	"github.com/go-resty/resty/v2"
 	client "github.com/influxdata/influxdb1-client/v2"
 	log "github.com/sirupsen/logrus"
+	"github.com/thedevsaddam/gojsonq/v2"
 )
 
 type Request struct {
@@ -35,11 +36,16 @@ func Post_Trace(url string, body string) Request {
 		SetHeader("Content-Type", "application/json"). //默认请求头
 		SetBody(body).                                 //匹配body
 		Post(url)
-	if err != nil {
-		log.Error("Client mothod error: ", err)
+
+	status, _ := gojsonq.New().FromString(resp.String()).FindR("error.code") //获取返回值是否包含error.code，有就认为失败
+	if err != nil || status != nil {
+		requestLogger := log.WithFields(log.Fields{"err_conn": err, "err_status": status, "url": url, "body": body})
+		requestLogger.Error("Client mothod error.")
+
+		status := 0
 		req := &Request{
 			URL:          url,
-			Status:       500,
+			Status:       status,
 			Proto:        "",
 			DNSLookup:    0,
 			ConnTime:     0,
@@ -51,40 +57,46 @@ func Post_Trace(url string, body string) Request {
 			RemoteAddr:   "",
 		}
 		return *req
+	} else {
+		status := 1
+		ti := resp.Request.TraceInfo()
+		req := &Request{
+			URL:            url,
+			Status:         status,
+			Proto:          resp.Proto(),
+			DNSLookup:      ti.DNSLookup.Nanoseconds(),
+			ConnTime:       ti.ConnTime.Nanoseconds(),
+			TCPConnTime:    ti.TCPConnTime.Nanoseconds(),
+			TLSHandshake:   ti.TLSHandshake.Nanoseconds(),
+			ServerTime:     ti.ServerTime.Nanoseconds(),
+			ResponseTime:   ti.ResponseTime.Nanoseconds(),
+			TotalTime:      ti.TotalTime.Nanoseconds(),
+			RequestAttempt: ti.RequestAttempt,
+			RemoteAddr:     ti.RemoteAddr.String(),
+		}
+		requestLogger := log.WithFields(log.Fields{
+			"url":  url,
+			"body": body,
+		})
+		requestLogger.Info("request post sucess.")
+		return *req
 	}
-
-	ti := resp.Request.TraceInfo()
-	req := &Request{
-		URL:            url,
-		Status:         resp.StatusCode(),
-		Proto:          resp.Proto(),
-		DNSLookup:      ti.DNSLookup.Nanoseconds(),
-		ConnTime:       ti.ConnTime.Nanoseconds(),
-		TCPConnTime:    ti.TCPConnTime.Nanoseconds(),
-		TLSHandshake:   ti.TLSHandshake.Nanoseconds(),
-		ServerTime:     ti.ServerTime.Nanoseconds(),
-		ResponseTime:   ti.ResponseTime.Nanoseconds(),
-		TotalTime:      ti.TotalTime.Nanoseconds(),
-		RequestAttempt: ti.RequestAttempt,
-		RemoteAddr:     ti.RemoteAddr.String(),
-	}
-	requestLogger := log.WithFields(log.Fields{
-		"url":  url,
-		"body": body,
-	})
-	requestLogger.Info("request post sucess.")
-	return *req
 }
 
 func Get_Trace(url string) Request {
 	client := resty.New() // 创建一个restry客户端
 	client.SetCloseConnection(true).SetTimeout(time.Second * 5)
 	resp, err := client.R().EnableTrace().Get(url)
-	if err != nil {
-		log.Error("Client mothod error: ", err)
+
+	status, _ := gojsonq.New().FromString(resp.String()).FindR("error.code") //获取返回值是否包含error.code，有就认为失败
+	if err != nil || status != nil {
+		requestLogger := log.WithFields(log.Fields{"err_conn": err, "err_status": status})
+		requestLogger.Error("Client mothod error.")
+
+		status := 0
 		req := &Request{
 			URL:          url,
-			Status:       500,
+			Status:       status,
 			Proto:        "",
 			DNSLookup:    0,
 			ConnTime:     0,
@@ -96,27 +108,30 @@ func Get_Trace(url string) Request {
 			RemoteAddr:   "",
 		}
 		return *req
+	} else {
+		status := 1
+		ti := resp.Request.TraceInfo()
+		req := &Request{
+			URL:            url,
+			Status:         status,
+			Proto:          resp.Proto(),
+			DNSLookup:      ti.DNSLookup.Nanoseconds(),
+			ConnTime:       ti.ConnTime.Nanoseconds(),
+			TCPConnTime:    ti.TCPConnTime.Nanoseconds(),
+			TLSHandshake:   ti.TLSHandshake.Nanoseconds(),
+			ServerTime:     ti.ServerTime.Nanoseconds(),
+			ResponseTime:   ti.ResponseTime.Nanoseconds(),
+			TotalTime:      ti.TotalTime.Nanoseconds(),
+			RequestAttempt: ti.RequestAttempt,
+			RemoteAddr:     ti.RemoteAddr.String(),
+		}
+
+		requestLogger := log.WithFields(log.Fields{
+			"url": url,
+		})
+		requestLogger.Info("request get sucess.")
+		return *req
 	}
-	ti := resp.Request.TraceInfo()
-	req := &Request{
-		URL:            url,
-		Status:         resp.StatusCode(),
-		Proto:          resp.Proto(),
-		DNSLookup:      ti.DNSLookup.Nanoseconds(),
-		ConnTime:       ti.ConnTime.Nanoseconds(),
-		TCPConnTime:    ti.TCPConnTime.Nanoseconds(),
-		TLSHandshake:   ti.TLSHandshake.Nanoseconds(),
-		ServerTime:     ti.ServerTime.Nanoseconds(),
-		ResponseTime:   ti.ResponseTime.Nanoseconds(),
-		TotalTime:      ti.TotalTime.Nanoseconds(),
-		RequestAttempt: ti.RequestAttempt,
-		RemoteAddr:     ti.RemoteAddr.String(),
-	}
-	requestLogger := log.WithFields(log.Fields{
-		"url": url,
-	})
-	requestLogger.Info("request post sucess.")
-	return *req
 }
 
 func Conninflux() client.Client {
