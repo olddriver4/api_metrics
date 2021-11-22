@@ -5,62 +5,30 @@ influx:
   url: 
   user: admin
   password: 
-  db: apimetrics
+  db: 
   precision: ns #(use n, u, ms, s, m or h)
 
 depends:
-  cfx_getBlockByEpochNumber:
+  getBlock:
     params: result.hash #过滤接口返回值
     default_value: "" #依赖key请求不到，设置默认key
-    body: '{"jsonrpc":"2.0","method":"cfx_getBlockByEpochNumber","params":["latest_confirmed", false],"id":1}'
+    body: ''
 
 modules:
   get:
     mothod: GET
     url:
-      baidu: https://baidu.com
+      baidu: https://www.baidu.com
 
-  cfx_epochNumber:
+  test1:
     mothod: POST
-    body: '{"jsonrpc":"2.0","method":"cfx_epochNumber","params":["latest_mined"],"id":1}'
+    body: ''
     url:
-      baidu: https://baidu.com
+      baidu: https://www.baidu.com
 
-  cfx_getBlockByEpochNumber:
-    mothod: POST 
-    body: '{"jsonrpc":"2.0","method":"cfx_getBlockByEpochNumber","params":["latest_confirmed", false],"id":1}'
-    url:
-      baidu: https://baidu.com
-
-  cfx_getBlockByHash:
+  test2:
     mothod: POST
-    body:  "{\"jsonrpc\":\"2.0\",\"method\":\"cfx_getBlockByHash\",\"params\":[\"${cfx_getBlockByEpochNumber}\", false],\"id\":1}"
-    depend: cfx_getBlockByEpochNumber
+    body:  ""
+    depend: getBlock
     url:
-      baidu: https://baidu.com
-   
-  cfx_getLogs:
-    mothod: POST
-    body: '{"jsonrpc":"2.0","method":"cfx_getLogs","params":[{"fromEpoch":"latest_confirmed","toEpoch":"latest_state","limit":"0xe"}],"id":1}'
-    url:
-      baidu: https://baidu.com
-
-  cfx_getTransactionByHash:
-    mothod: POST
-    body: "{\"jsonrpc\":\"2.0\",\"method\":\"cfx_getTransactionByHash\",\"params\":[\"${cfx_getBlockByEpochNumber}\"],\"id\":1}"
-    depend: cfx_getBlockByEpochNumber
-    url:
-      baidu: https://baidu.com
-
-  cfx_getBlocksByEpoch:
-    mothod: POST
-    body: '{"jsonrpc":"2.0","method":"cfx_getBlocksByEpoch","params":["latest_confirmed"],"id":1}'
-    url:
-      baidu: https://baidu.com
-
-  cfx_getTransactionReceipt:
-    mothod: POST
-    body: "{\"jsonrpc\":\"2.0\",\"method\":\"cfx_getTransactionReceipt\",\"params\":[\"${cfx_getBlockByEpochNumber}\"],\"id\":1}"
-    depend: cfx_getBlockByEpochNumber
-    url:
-      baidu: https://baidu.com
+      google: https://google.cn

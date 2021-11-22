@@ -62,6 +62,7 @@ func main() {
 							//写入数据库
 							conn := module.Conninflux()
 							module.Writeinflux(conn, name, m, mothod, trace)
+							module.Writeinflux_business(conn, name, url)
 							conn.Close()
 
 						} else if mothod == "POST" { //判断mothod
@@ -83,6 +84,7 @@ func main() {
 							//写入数据库
 							conn := module.Conninflux()
 							module.Writeinflux(conn, name, m, mothod, trace)
+							module.Writeinflux_business(conn, name, url)
 							conn.Close()
 
 						} else {

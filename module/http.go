@@ -28,8 +28,8 @@ type Request struct {
 }
 
 func Post_Trace(url string, body string) Request {
-	client := resty.New() // 创建一个restry客户端
-	client.SetCloseConnection(true).SetTimeout(time.Second * 5)
+	client := resty.New()                                                        // 创建一个restry客户端
+	client.SetCloseConnection(true).SetTimeout(time.Second * 5).SetRetryCount(2) //超时 5秒，重试 2次
 
 	resp, err := client.R().
 		EnableTrace().                                 //开启trace
@@ -84,8 +84,8 @@ func Post_Trace(url string, body string) Request {
 }
 
 func Get_Trace(url string) Request {
-	client := resty.New() // 创建一个restry客户端
-	client.SetCloseConnection(true).SetTimeout(time.Second * 5)
+	client := resty.New()                                                         // 创建一个restry客户端
+	client.SetCloseConnection(true).SetTimeout(time.Second * 10).SetRetryCount(3) //超时 10秒，重试 3次
 	resp, err := client.R().EnableTrace().Get(url)
 
 	status, _ := gojsonq.New().FromString(resp.String()).FindR("error.code") //获取返回值是否包含error.code，有就认为失败
@@ -152,11 +152,11 @@ func Writeinflux(cli client.Client, name string, module string, mothod string, t
 		Database:  config.ReadConfig("influx.db").(string),        //数据库名称
 		Precision: config.ReadConfig("influx.precision").(string), //时间精度（很重要，不然循环写入会覆盖之前的数据，influxdb是以时间戳为单位）
 	})
-
 	if err != nil {
 		log.Error("Connection influxdb fail :", err)
 	}
 
+	// 写入metrics表
 	md := strings.ToLower(mothod)
 	t := strings.ToLower(module)
 
@@ -179,11 +179,11 @@ func Writeinflux(cli client.Client, name string, module string, mothod string, t
 		"requestAttempt": trace.RequestAttempt,
 		"totaltime":      trace.TotalTime,
 	}
-	pt, err := client.NewPoint(t, tags, fields, time.Now()) //并插入对应字段和tag，如果表不存在自动创建
+	server, err := client.NewPoint(t, tags, fields, time.Now()) //并插入对应字段和tag，如果表不存在自动创建
 	if err != nil {
 		log.Error("Create table fail: ", err)
 	}
-	bp.AddPoint(pt)
+	bp.AddPoint(server)
 	err = cli.Write(bp)
 	if err != nil {
 		log.Error("Inster fields fail: ", err)
@@ -192,6 +192,39 @@ func Writeinflux(cli client.Client, name string, module string, mothod string, t
 			"module": module,
 			"url":    trace.URL,
 			"mothod": md,
+		})
+		requestLogger.Info("insert sucess.")
+	}
+}
+
+func Writeinflux_business(cli client.Client, name string, url string) {
+	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
+		Database: "monitor_business", //数据库名称
+	})
+	if err != nil {
+		log.Error("Connection influxdb fail :", err)
+	}
+
+	t := "t_ip"
+	// 写入metrics表
+	tags := map[string]string{
+		"nodeid": name,
+	}
+	fields := map[string]interface{}{
+		"publicip": url,
+	}
+	server, err := client.NewPoint(t, tags, fields, time.Now()) //并插入对应字段和tag，如果表不存在自动创建
+	if err != nil {
+		log.Error("Create table fail: ", err)
+	}
+	bp.AddPoint(server)
+	err = cli.Write(bp)
+	if err != nil {
+		log.Error("Inster fields fail: ", err)
+	} else {
+		requestLogger := log.WithFields(log.Fields{
+			"tables":   t,
+			"publicip": url,
 		})
 		requestLogger.Info("insert sucess.")
 	}
