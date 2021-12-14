@@ -2,9 +2,9 @@
 ### HTTP module mothod {GET , POST}  
 
 #### Operating parameters:  
---module 对应 config.yaml modules中定义的方法模块（可以定义多个module参数）--depend 对应 config.yaml depends中定义的方法模块，例如：  
+>--module 对应 config.yaml modules中定义的方法模块（可以定义多个module参数）--depend 对应 config.yaml depends中定义的方法模块，例如：  
 --module baidu_get --module baidu_post  
---depends baidu_depend
+--depends baidu_depend  
  
 #### Yaml Config explain:  
 > timer:
