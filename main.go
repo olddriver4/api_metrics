@@ -37,7 +37,7 @@ func main() {
 	flag.Parse()
 
 	// 判断传入的是否为空，否则抛出异常
-	if modules == nil {
+	if modules == nil || depends == nil {
 		log.Fatal("Please enter the parameters [module] !")
 	}
 
